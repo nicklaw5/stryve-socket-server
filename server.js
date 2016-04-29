@@ -198,7 +198,6 @@ io.on('connection', function(socket) {
 	/*** ON CHANNEL MESSAGE RECEIVED ***/
 	/***********************************/
 	socket.on('channel-message', function(payload) {
-
 		// replace certain emojis
 		payload.event_text = payload.event_text.replace(/<3|&lt;3/g, ":heart:");
 		payload.event_text = payload.event_text.replace(/<\/3|&lt;&#x2F;3/g, ":broken_heart:");
@@ -208,11 +207,17 @@ io.on('connection', function(socket) {
 
 		// prepare request data
 		var form_data = {
-			event_type: 'user_message',
-			event_text: payload.event_text,
-			publish_to: 'channel_and_self',
-			editable: 'true'
+			uuid: 			uuid.v1(),
+			channel_uuid: 	payload.channel_uuid,
+			event_type: 	'user_message',
+			event_text: 	payload.event_text,
+			publish_to: 	'channel_and_self',
+			editable: 		'true'
 		};
+
+		// send the message back to sender to avoid http latency
+		// (we will update it when we get it back from the server)
+		socket.emit('channel-message::' + payload.channel_uuid + '::preliminary', form_data);
 
 		// set the request options
 		var options = requestOptions('post', 'channels/' + payload.channel_uuid + '/events', payload.access_token, form_data);
@@ -229,11 +234,11 @@ io.on('connection', function(socket) {
 			// handle error response
 			} else {
 				// send error message back to the user
+				// TODO
 			}
 		}.bind(io));
-	});
-
-
+	}.bind(socket));
+	
 	/***********************/
 	/*** _TESTING STILL_ ***/
 	/***********************/
