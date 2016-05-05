@@ -195,15 +195,61 @@ io.on('connection', function(socket) {
 	});
 
 	/***********************************/
+	/*** ON CONTACT MESSAGE RECEIVED ***/
+	/***********************************/
+	socket.on('contact-message', function(payload) {
+		
+		// parse the text
+		payload.event_text = parseEventText(payload.event_text);
+
+		// return if no text to continue with
+		if(!payload.event_text.length)
+			return;
+
+		// prepare request data
+		var form_data = {
+			uuid: 			uuid.v1(),
+			contact_uuid: 	payload.contact_uuid,
+			event_type: 	'user_message',
+			event_text: 	payload.event_text,
+			publish_to: 	'both',
+			editable: 		'true'
+		};
+
+		// send the message back to sender to avoid http latency
+		// (we will update it when we get it back from the server)
+		socket.emit('contact-message::' + payload.contact_uuid + '::preliminary', form_data);
+
+		// set the request options
+		// var options = requestOptions('post', 'channels/' + payload.channel_uuid + '/events', payload.access_token, form_data);
+
+		// // send the request
+		// request(options, function (error, response, body) {
+		//   	body = JSON.parse(body);
+		  	
+		//   	// handle success response
+		// 	if (body.code == 200) {
+		// 		// send message to all clients in this channel, including the user
+		// 		io.emit('channel-message::' + body.response.channel_uuid, body.response);
+
+		// 	// handle error response
+		// 	} else {
+		// 		// send error message back to the user
+		// 		// TODO
+		// 	}
+		// }.bind(io));
+	}.bind(socket));
+
+	/***********************************/
 	/*** ON CHANNEL MESSAGE RECEIVED ***/
 	/***********************************/
 	socket.on('channel-message', function(payload) {
-		// replace certain emojis
-		payload.event_text = payload.event_text.replace(/<3|&lt;3/g, ":heart:");
-		payload.event_text = payload.event_text.replace(/<\/3|&lt;&#x2F;3/g, ":broken_heart:");
+		// parse the text
+		payload.event_text = parseEventText(payload.event_text);
 
-		// strip any html tags from the text for security
-		payload.event_text = striptags(payload.event_text);
+		// return if no text to continue with
+		if(!payload.event_text.length)
+			return;
 
 		// prepare request data
 		var form_data = {
@@ -267,7 +313,22 @@ io.on('connection', function(socket) {
 	
 });
 
+/**
+ * Pares the provided string for insecurities.
+ *
+ * @param {string} text
+ * @return string
+ */
+function parseEventText(text) {
+	// replace certain emojis
+	text = text.replace(/<3|&lt;3/g, ":heart:");
+	text = text.replace(/<\/3|&lt;&#x2F;3/g, ":broken_heart:");
 
+	// strip any html tags from the text for security
+	text = striptags(text);
+
+	return text;
+}
 
 
 
