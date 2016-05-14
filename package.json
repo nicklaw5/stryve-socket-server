@@ -16,5 +16,6 @@
     "socket.io": "^1.4.4",
     "striptags": "^2.1.1",
     "uuid": "^2.0.2"
-  }
+  },
+  "dependencies": {}
 }

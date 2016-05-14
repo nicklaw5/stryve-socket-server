@@ -110,10 +110,10 @@ servers_io.on('connection', socket => {
 			payload.access_token,
 			res => {
 				// add the user's info to the socket for later user
-				socket.connectedUsers.push({ uuid: res.response.owner_uuid, username: res.response.owner_username })
+				socket.connectedUsers.push({ uuid: res.owner_uuid, username: res.owner_username })
 
 				// add the servers's info to the socket for later user
-				socket.activeServers.push({ uuid: res.response.server_uuid, name: res.response.server_name })
+				socket.activeServers.push({ uuid: res.server_uuid, name: res.server_name })
 			
 				// besides the socket initiator,  let all users know when a connection is received,
 				// even if they don't want to hear it
@@ -206,7 +206,7 @@ servers_io.on('connection', socket => {
 			apiPayload,
 			payload.access_token,
 			res => {
-				servers_io.emit('channel-message::' + res.response.channel_uuid, res.response)
+				servers_io.emit('channel-message::' + res.channel_uuid, res)
 			},
 			res => {
 				//TODO
