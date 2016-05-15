@@ -69,8 +69,9 @@ users_io.on('connection', function (socket) {
 		}
 
 		// prepare request data
-		var form_data = {
-			uuid: _uuid2.default.v1(),
+		var apiPayload = {
+			event_uuid: _uuid2.default.v1(),
+			sender_uuid: payload.sender_uuid,
 			recipient_uuid: payload.recipient_uuid,
 			event_type: 'user_message',
 			event_text: payload.event_text,
@@ -80,10 +81,20 @@ users_io.on('connection', function (socket) {
 
 		// send the message back to sender to avoid http latency
 		// (we will update it when we get it back from the server)
-		socket.emit('contact-message::' + payload.contact_uuid + '::preliminary', form_data);
+		socket.emit('contact-message::' + payload.sender_uuid + '::preliminary', apiPayload);
 
 		// send ajax here
-		// TODO
+		_index2.default.contacts.postContactEvent(apiPayload, payload.access_token, function (res) {
+			// send to intended recipient
+			// socket.broadcast.emit('contact-message::' + res.sender_uuid, res)
+
+			// send to sender
+			users_io.emit('contact-message::' + res.recipient_uuid, res);
+			users_io.emit('contact-message::' + res.sender_uuid, res);
+		}, function (res) {
+			//TODO
+			console.log(res);
+		});
 	});
 });
 /* end $users_io */

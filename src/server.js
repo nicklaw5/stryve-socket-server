@@ -45,8 +45,9 @@ users_io.on('connection', socket => {
 		}
 
 		// prepare request data
-		const form_data = {
-			uuid: 			uuid.v1(),
+		const apiPayload = {
+			event_uuid: 	uuid.v1(),
+			sender_uuid: 	payload.sender_uuid,
 			recipient_uuid:	payload.recipient_uuid,
 			event_type: 	'user_message',
 			event_text: 	payload.event_text,
@@ -56,11 +57,24 @@ users_io.on('connection', socket => {
 
 		// send the message back to sender to avoid http latency
 		// (we will update it when we get it back from the server)
-		socket.emit('contact-message::' + payload.contact_uuid + '::preliminary', form_data)
+		socket.emit('contact-message::' + payload.sender_uuid + '::preliminary', apiPayload)
 
 		// send ajax here
-		// TODO
-	
+		client.contacts.postContactEvent(
+			apiPayload,
+			payload.access_token,
+			res => {
+				// send to intended recipient
+				users_io.emit('contact-message::' + res.recipient_uuid, res)
+
+				// send back to sender
+				users_io.emit('contact-message::' + res.sender_uuid, res)
+			},
+			res => {
+				//TODO
+				console.log(res)
+			}
+		)	
 	})
 })
 /* end $users_io */
