@@ -228,32 +228,13 @@ servers_io.on('connection', socket => {
 			}
 		)
 	})
-	
-	/***********************/
-	/***  TESTING STILL  ***/
-	/***********************/
-	socket.on('get-clients', payload => {
-		// console.log(io.sockets.sockets)
-		// console.log(Object.keys(io.engine.clients))
-		// console.log(Object.keys(io.engine.clients))
 
-
-		// console.log(io.sockets.connected) //Return {socket_1_id: {}, socket_2_id: {}} . This is the most convenient one, since you can just refer to io.sockets.connected[id] then do common things like emit()
-		// console.log(io.sockets.sockets) //Returns [{socket_1}, {socket_2}, ....]. Can refer to socket_i.id to distinguish
-		// console.log(io.sockets.adapter.sids) //Return {socket_1_id: {}, socket_2_id: {}} . Looks similar to the first one but the object is not actually the socket, just the information.
-
-		// // Not directly helps but still relevant
-		console.log(io.sockets.adapter.rooms) //Returns {room_1_id: {}, room_2_id: {}}
-		// console.log(io.sockets.server.eio.clients) //Return client sockets
-		// console.log(io.sockets.server.eio.clientsCount) //Return number of connected clients
-
-		io.emit('server-channels', io.sockets.adapter.rooms)
-		// io.emit('rooms', io.sockets.server.eio)
-		// io.emit('rooms', io.sockets.sockets)
-		// io.emit('rooms', io.sockets.adapter.sids)
-		// io.emit('rooms', io.sockets.sockets)
-		// io.emit('rooms', io.engine.clients)
+	/******************************/
+	/*** ON NEW CHANNEL CREATED ***/
+	/******************************/
+	socket.on('channel-created', channel => {
+		socket.broadcast.emit('channel-created', channel);
 	})
-})
 
+})
 /* end $servers_io */
