@@ -20,9 +20,9 @@ var _utils = require('./utils');
 
 var utils = _interopRequireWildcard(_utils);
 
-var _index = require('../../stryve-api-client/lib/index');
+var _stryveApiClient = require('stryve-api-client');
 
-var _index2 = _interopRequireDefault(_index);
+var _stryveApiClient2 = _interopRequireDefault(_stryveApiClient);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -36,11 +36,8 @@ var dev = process.env.NODE_ENV !== 'production',
     port = 3000;
 
 // start the server
-
-
-/** TESTING API CLIENT **/
 server.listen(port, function () {
-	if (dev) console.log("\nListening on *:" + port + "\r\n");
+	console.log("\nListening on *:" + port + "\r\n");
 });
 
 /********************************/
@@ -84,7 +81,7 @@ users_io.on('connection', function (socket) {
 		socket.emit('contact-message::' + payload.sender_uuid + '::preliminary', apiPayload);
 
 		// send ajax here
-		_index2.default.contacts.postContactEvent(apiPayload, payload.access_token, function (res) {
+		_stryveApiClient2.default.contacts.postContactEvent(apiPayload, payload.access_token, function (res) {
 			// send to intended recipient
 			users_io.emit('contact-message::' + res.recipient_uuid, res);
 
@@ -136,7 +133,7 @@ servers_io.on('connection', function (socket) {
 		};
 
 		// send the api request
-		_index2.default.servers.postServerEvent(apiPayload, payload.access_token, function (res) {
+		_stryveApiClient2.default.servers.postServerEvent(apiPayload, payload.access_token, function (res) {
 			// add the user's info to the socket for later user
 			socket.connectedUsers.push({ uuid: res.owner_uuid, username: res.owner_username });
 
@@ -171,7 +168,7 @@ servers_io.on('connection', function (socket) {
 		// update payload
 		payload['uuid'] = _uuid2.default.v1();
 		payload['event_type'] = 'user_subscribed';
-		payload['event_text'] = payload.owner_username + ' has joined your channel.';
+		payload['event_text'] = payload.owner_username + ' has joined your channel';
 
 		// broadcast user subscription to all subscribers but the instantiating socket
 		socket.broadcast.emit('user-subscribed-to::' + payload.channel_uuid, payload);
@@ -189,7 +186,7 @@ servers_io.on('connection', function (socket) {
 		// modify payload
 		payload['uuid'] = _uuid2.default.v1();
 		payload['event_type'] = 'user_unsubscribed';
-		payload['event_text'] = payload.owner_username + ' has left your channel.';
+		payload['event_text'] = payload.owner_username + ' has left your channel';
 
 		// broadcast user subscription to all subscribers but the instantiating socket
 		socket.broadcast.emit('user-unsubscribed-from::' + payload.channel_uuid, payload);
@@ -225,7 +222,7 @@ servers_io.on('connection', function (socket) {
 		socket.emit('channel-message::' + payload.channel_uuid + '::preliminary', apiPayload);
 
 		// save the  event to the bdatabase
-		_index2.default.channels.postChannelEvent(apiPayload, payload.access_token, function (res) {
+		_stryveApiClient2.default.channels.postChannelEvent(apiPayload, payload.access_token, function (res) {
 			servers_io.emit('channel-message::' + res.channel_uuid, res);
 		}, function (res) {
 			//TODO

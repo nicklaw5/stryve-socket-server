@@ -3,9 +3,7 @@ import http from 'http'
 import express from 'express'
 import socketio from 'socket.io'
 import * as utils from './utils'
-
-/** TESTING API CLIENT **/
-import client from '../../stryve-api-client/lib/index'
+import client from 'stryve-api-client'
 
 const dev 		= process.env.NODE_ENV !== 'production'
 	, app		= express()
@@ -16,7 +14,7 @@ const dev 		= process.env.NODE_ENV !== 'production'
 
 // start the server
 server.listen(port, () => {
-	if(dev) console.log("\nListening on *:" + port + "\r\n")
+	console.log("\nListening on *:" + port + "\r\n")
 })
 
 /********************************/
@@ -160,7 +158,7 @@ servers_io.on('connection', socket => {
 		// update payload
 		payload['uuid'] 		= uuid.v1()
 		payload['event_type'] 	= 'user_subscribed'
-		payload['event_text'] 	= payload.owner_username + ' has joined your channel.'
+		payload['event_text'] 	= payload.owner_username + ' has joined your channel'
 		
 		// broadcast user subscription to all subscribers but the instantiating socket
 		socket.broadcast.emit('user-subscribed-to::' + payload.channel_uuid, payload)
@@ -179,7 +177,7 @@ servers_io.on('connection', socket => {
 		// modify payload
 		payload['uuid'] 		= uuid.v1()
 		payload['event_type'] 	= 'user_unsubscribed'
-		payload['event_text'] 	= payload.owner_username + ' has left your channel.'
+		payload['event_text'] 	= payload.owner_username + ' has left your channel'
 
 		// broadcast user subscription to all subscribers but the instantiating socket
 		socket.broadcast.emit('user-unsubscribed-from::' + payload.channel_uuid, payload)
